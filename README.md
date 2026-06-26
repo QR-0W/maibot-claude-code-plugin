@@ -7,9 +7,8 @@
 - 支持 `/claude <任务描述>` 触发 Claude Code CLI 本地任务
 - 实时转发 NDJSON 流式进度到 QQ
 - 任务完成后自动扫描并上传产物（docx/pdf/xlsx/ppt/zip 等）
-- 支持 NapCat 文件直传和 SnowLuma OneBot file 段
+- 支持 NapCat 文件直传（产物回传）和文件输入（QQ 文件作为任务材料）
 - 支持 `/claude --dm` 私聊进度推送
-- 支持 session 续聊（`/claude session` / `/claude continue`）
 - 支持 `/claude mcp` 列出 MCP 服务器
 - 支持 `/claude config` 查看配置
 - 回复 QQ 文件消息作为输入材料
@@ -21,7 +20,7 @@
 2. **Claude Code CLI** 已安装并认证
    - 安装：`npm install -g @anthropic-ai/claude-code`
    - 认证：`claude auth login`（推荐）或设置 `ANTHROPIC_API_KEY` 环境变量
-3. QQ 适配器：NapCat 或 SnowLuma（用于文件上传，可选）
+3. QQ 适配器：NapCat（用于文件上传与输入）
 
 ## 安装
 
@@ -142,16 +141,6 @@ upload_file = true
 ```
 
 NapCat 支持 `upload_group_file` / `upload_private_file` API，可直传产物到 QQ。
-
-### SnowLuma
-
-在 `config.toml` 中启用 SnowLuma：
-
-```toml
-[snowluma]
-enabled = true
-send_artifacts_as_file_segments = true
-```
 
 ## 权限控制
 
