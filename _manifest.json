@@ -32,10 +32,11 @@
   "plugin_type": "integration",
   "display": {
     "icon": {
-      "type": "lucide",
-      "value": "terminal",
-      "fallback": "bot"
-    }
+      "type": "local",
+      "value": "icon.svg",
+      "fallback": "terminal"
+    },
+    "background": "#1a1a2e"
   },
   "capabilities": [
     "api.call",
