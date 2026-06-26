@@ -36,7 +36,6 @@
       "value": "icon.svg",
       "fallback": "terminal"
     },
-    "background": "#1a1a2e"
   },
   "capabilities": [
     "api.call",
