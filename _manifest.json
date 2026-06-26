@@ -1,0 +1,53 @@
+{
+  "manifest_version": 2,
+  "version": "1.0.0",
+  "name": "麦麦用Claude Code CLI做任务",
+  "description": "通过 QQ 命令在 MaiBot 所在服务器上运行 Claude Code CLI，支持 NapCat 文件直传，并适配 SnowLuma 的 NapCat 兼容消息 API；也保留远程 HTTP Agent 模式。",
+  "author": {
+    "name": "Arcczr",
+    "url": "https://github.com/Arcczr"
+  },
+  "license": "MIT",
+  "urls": {
+    "repository": "https://github.com/Arcczr/maibot-claude-code-plugin",
+    "homepage": "https://github.com/Arcczr/maibot-claude-code-plugin",
+    "documentation": "https://github.com/Arcczr/maibot-claude-code-plugin#readme",
+    "issues": "https://github.com/Arcczr/maibot-claude-code-plugin/issues"
+  },
+  "host_application": {
+    "min_version": "1.0.0",
+    "max_version": "1.99.99"
+  },
+  "sdk": {
+    "min_version": "2.5.2",
+    "max_version": "2.99.99"
+  },
+  "dependencies": [
+    {
+      "type": "python_package",
+      "name": "httpx",
+      "version_spec": ">=0.28.0"
+    }
+  ],
+  "plugin_type": "integration",
+  "display": {
+    "icon": {
+      "type": "lucide",
+      "value": "terminal",
+      "fallback": "bot"
+    }
+  },
+  "capabilities": [
+    "api.call",
+    "send.text",
+    "send.custom",
+    "message.get_by_id"
+  ],
+  "i18n": {
+    "default_locale": "zh-CN",
+    "supported_locales": [
+      "zh-CN"
+    ]
+  },
+  "id": "arcczr.remote-claude-code-agent"
+}

@@ -1,0 +1,266 @@
+# remote_claude_code_agent - Claude Code CLI QQ 调度器配置
+
+[plugin]
+# 配置文件版本
+config_version = "1.0.0"
+
+# 是否启用插件。触发权限由 permission 控制。
+enabled = true
+
+[napcat]
+# 是否使用 NapCat Adapter API 高级能力。
+# 与 [snowluma].enabled 二选一；如果两者同时开启，插件会视为配置冲突，不会把 NapCat 当作 SnowLuma 兜底。
+# 开启后可通过 MaiBot SDK 调用 adapter.napcat.* 公开 API，用于产物直传、私聊进度和补全 QQ 文件信息。
+enabled = false
+
+# 调用 upload_group_file/upload_private_file 时是否执行真实上传。
+upload_file = true
+
+# 单个产物最大上传大小，单位 MB。0 表示不限制。
+max_file_size_mb = 100.0
+
+[snowluma]
+# 是否使用 SnowLuma Adapter 高级能力。
+# 与 [napcat].enabled 二选一；开启 SnowLuma 后，插件只走 SnowLuma 暴露的兼容 API，不调用 NapCat 兜底。
+# SnowLuma 当前公开了 adapter.napcat.message.send_private_msg / send_group_msg / get_msg 等兼容 API。
+enabled = false
+
+# 通过 SnowLuma 兼容发送 API 发送 OneBot file 段回传产物。
+# 这是 SnowLuma 的独立产物发送路径；如果底层不支持 file 段，插件只报告失败，不改用 NapCat。
+send_artifacts_as_file_segments = true
+
+# SnowLuma file 段单个产物最大大小，单位 MB。0 表示不限制。
+max_file_size_mb = 100.0
+
+[local_claude]
+# Claude Code CLI 可执行文件名或绝对路径。
+# Ubuntu/Linux 示例："/usr/local/bin/claude" 或 "/root/.local/bin/claude"
+# Windows 示例："C:\\Users\\你的用户名\\AppData\\Roaming\\npm\\claude.cmd"
+claude_binary = "claude"
+
+# 本地任务根目录。相对路径按插件目录解析。
+# 默认写入 remote_claude_code_agent/data/tasks。
+# 不建议使用默认目录以外的其他路径，可能存在安全和误删风险，除非你知道自己在做什么。
+work_root = "data/tasks"
+
+# 可选模型名（alias 或完整 ID），留空则使用 Claude Code 默认配置。
+# alias: sonnet, opus, haiku, fable
+# full-id: claude-sonnet-4-6, claude-opus-4-8 等
+model = ""
+
+# Claude Code 最大 agentic turns 数。0 表示不限制。
+max_turns = 20
+
+# 是否使用 --verbose 模式以获得更丰富的输出事件。
+# 开启后配合 stream-json 输出格式可提取更详细的进度信息。
+verbose = true
+
+# 额外传给 claude 的参数，例如 ["--betas", "interleaved-thinking"]。
+# 注意不要传 --dangerously-skip-permissions、--output-format、--session-id 等插件内部管理的 flag。
+extra_args = []
+
+# 额外传给 Claude Code 子进程的环境变量名。
+# 默认只传 PATH/HOME/CLAUDE_HOME/LANG 等最小运行环境，避免把 API key/token/secret 暴露给 Claude Code、MCP 或 skill。
+# 如果确实需要让 Claude Code 或 MCP 读取某个凭据，必须显式写在这里，并确认你接受泄露风险。
+# 示例：["ANTHROPIC_API_KEY"]
+pass_env_vars = []
+
+# 本地 Claude Code 任务运行超时，单位秒。
+process_timeout_seconds = 3600.0
+
+# 产物匹配规则，会在任务 workspace 下扫描。
+artifact_globs = [
+    "artifacts/*",
+    "*.docx",
+    "*.pdf",
+    "*.md",
+    "*.zip",
+    "*.xlsx",
+    "*.pptx",
+]
+
+[permission]
+# 是否允许所有用户触发。
+# true 表示默认所有用户都能触发；如 user_list_mode = "blacklist"，trigger_users 里的用户仍会被禁止。
+# false 表示必须通过用户白名单；可使用旧 allowed_users，或使用 user_list_mode = "whitelist" + trigger_users。
+allow_all_users = false
+
+# 旧版用户白名单，保留兼容。推荐新配置使用 user_list_mode + trigger_users。
+allowed_users = []
+
+# 用户名单模式：whitelist 或 blacklist。
+# whitelist：只有 trigger_users 里的用户能触发。
+# blacklist：trigger_users 里的用户不能触发，其他用户按 allow_all_users 规则处理。
+user_list_mode = "blacklist"
+
+# 用户黑白名单。推荐写成 "qq:用户ID"；也兼容只写用户 ID。
+trigger_users = []
+
+# 管理员用户。允许使用 danger-full-access 等高危配置。
+admin_users = []
+
+# 旧版聊天流白名单，保留兼容。推荐新配置使用 chat_list_mode + trigger_chats。
+allowed_groups = []
+
+# 聊天流名单模式：whitelist 或 blacklist。
+# 聊天流就是触发 /claude 的地方，可以是 QQ 群、QQ 私聊或 MaiBot 识别到的其他对话来源。
+# 如果你只在群里使用，把这里当成"群组黑白名单"理解即可。
+chat_list_mode = "blacklist"
+
+# 聊天流黑白名单。可写群号、"qq:群号" 或 stream_id；空列表表示不限制聊天流。
+trigger_chats = []
+
+# 是否拒绝 QQ 群临时私聊触发。
+# 群临时会话在部分 adapter 路由下可能把回复发回群聊，建议保持 true。
+reject_temporary_private_chat = true
+
+[progress]
+# 是否把运行进度转发到 QQ
+forward_progress = true
+
+# 进度消息最小发送间隔，单位秒
+min_send_interval_seconds = 5.0
+
+# 每次最多合并多少条进度
+max_progress_items_per_message = 5
+
+# 单条进度最大字符数
+max_progress_item_chars = 300
+
+# 最终摘要最大字符数
+max_summary_chars = 1800
+
+# 是否允许用户在创建任务时添加参数，把阶段性进度私聊发送给触发用户。
+# 需要 napcat.enabled = true 或 snowluma.enabled = true，且机器人能私聊该用户；失败时可回退当前聊天流。
+# QQ 发送私聊通常要求触发用户先主动私聊机器人一次。
+# 群临时会话不等同于好友私聊，可能发送失败。
+enable_private_progress = true
+
+# 触发私聊进度的参数。示例：/claude --dm 生成一份报告
+private_progress_trigger_args = [
+    "--dm",
+    "--private-progress",
+]
+
+# 私聊进度发送失败时，是否回退到原聊天流发送进度。
+private_progress_fallback_to_origin = true
+
+# 使用 --dm 时，是否把"任务已创建"的提示也私聊发送。
+# 一般建议保持 false，让群里能看到任务已创建和 task_id，方便协作和排查。
+private_progress_send_task_created = false
+
+# 使用 --dm 时，是否把最终结果和产物文件也私聊发送。
+# 开启后需要 napcat.enabled = true 或 snowluma.enabled = true；私聊发送失败会回退到原聊天流。
+# 产物文件发送取决于当前启用的适配器：NapCat 走 upload_*_file，SnowLuma 走 OneBot file 段。
+private_progress_send_artifacts = false
+
+[artifact]
+# 是否在完成时发送产物列表或下载链接
+send_artifact_links = true
+
+# 如果远程服务返回 artifact.custom_payload，是否尝试用 send.custom 发送文件消息。
+# 只有当前 QQ 适配器支持对应自定义消息时才会成功。
+try_custom_file_message = false
+
+# 自定义文件消息类型。不同适配器可能不同，例如 "file"。
+custom_file_message_type = "file"
+
+[input_file]
+# 是否允许用户回复 QQ 文件消息后，用 /claude 把该文件作为输入材料。
+enable_reply_file = true
+
+# 输入材料放入 Claude Code workspace 下的目录名。
+input_dir_name = "input"
+
+# 单个任务最多导入多少个被回复文件。
+max_files_per_task = 5
+
+# 单个输入文件最大大小，单位 MB。0 表示不限制。
+max_file_size_mb = 100.0
+
+# 启动时是否自动清理超过 input_file_ttl_hours 的输入材料。
+auto_cleanup_input_files = true
+
+# 输入材料保留时间，单位小时。0 表示不自动清理。
+# 只删除 workspace/input 下的输入材料，不删除产物、日志和 task 记录。
+input_file_ttl_hours = 24.0
+
+# 是否允许从文件消息中的 HTTP URL 下载材料。
+allow_url_download = true
+
+# 从文件消息 URL 下载材料的超时时间，单位秒。
+download_timeout_seconds = 120.0
+
+# 允许复制的本地文件根目录。空列表表示禁止复制服务器本地路径。
+# 日常使用建议通过 QQ 上传文件；确需读取本地目录时，由管理员显式配置允许根目录。
+allowed_local_roots = []
+
+[task]
+# 帮助文本默认展示的主命令前缀。命令组件当前固定支持 /claude。
+command_prefix = "/claude"
+
+# 执行模式：local 表示直接调用本机 Claude Code CLI；remote 表示调用 server.base_url。
+execution_mode = "local"
+
+# 是否允许取消远程任务
+enable_cancel = true
+
+# 提交给远程服务的任务类型
+task_type = "claude_code_cli"
+
+# 单个聊天流同时运行的最大任务数
+max_running_tasks_per_stream = 1
+
+# 单个用户同时运行的最大任务数
+max_running_tasks_per_user = 1
+
+# 轮询远程任务状态间隔，单位秒
+poll_interval_seconds = 5.0
+
+# 单个任务最长跟踪时间，单位秒。远程任务可能继续运行，但插件会停止转发。
+max_watch_seconds = 3600.0
+
+# 普通 task 可通过 resume 继续的保留时间，单位小时。只清理插件记录，不删除产物目录。
+resumable_task_ttl_hours = 24.0
+
+# 把普通 task 转为 session 时是否要求二次确认。
+require_session_confirm = true
+
+# 启动时是否自动清理超过 resumable_task_ttl_hours 的普通 task 记录。
+auto_cleanup_task_records = true
+
+# 自动清理过期 task 记录时，是否同时删除对应 task workspace 和产物文件。
+# 建议确认产物不需要长期保留后再开启。
+auto_cleanup_task_workspaces = true
+
+# 是否启用后台定时清理。默认关闭；长时间不重启 MaiBot 时可开启。
+enable_periodic_cleanup = false
+
+# 后台定时清理间隔，单位分钟。
+# 每次会按上面的自动清理开关处理过期 task 记录/workspace，并按 input_file 的 TTL 清理输入材料。
+periodic_cleanup_interval_minutes = 60.0
+
+[server]
+# 远程 Ubuntu Agent 服务地址，例如 "https://agent.example.com" 或 "http://10.0.0.2:8080"
+base_url = ""
+
+# 鉴权 token。插件会以 Authorization: Bearer <token> 形式发送。
+api_token = ""
+
+# 是否要求配置 api_token。生产环境建议保持 true。
+require_api_token = true
+
+# 创建任务接口路径
+create_path = "/v1/tasks"
+
+# 查询任务状态接口路径模板，必须包含 {task_id}
+status_path_template = "/v1/tasks/{task_id}"
+
+# 取消任务接口路径模板，必须包含 {task_id}
+cancel_path_template = "/v1/tasks/{task_id}/cancel"
+
+# HTTP 请求超时秒数
+request_timeout_seconds = 20.0
+
+# 是否校验 HTTPS 证书。内网自签证书可临时关闭。
+verify_tls = true
